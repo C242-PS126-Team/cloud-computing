@@ -16,6 +16,8 @@ Service yang akan menangani proses machine learning dan prediksi.
 
 ## Arsitektur Sistem
 
+<img src="assets/architechture.svg" alt="Arsitektur Sistem" title="Arsitektur Sistem">
+
 Sistem ini menggunakan arsitektur microservice dimana setiap service berjalan secara independen dan berkomunikasi melalui API.
 
 ## Cara Menjalankan
