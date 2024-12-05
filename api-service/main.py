@@ -1,10 +1,11 @@
 from io import BytesIO
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import StreamingResponse, JSONResponse
+import json
 
 from pydantic import BaseModel
-from service.inferenceService import predict_color
-from service.loadModel import loadModel
+from service import predict_color
+from service import loadModel
 from utils import generate_unique_id
 
 # from google.cloud import storage
@@ -13,7 +14,8 @@ import requests
 import os
 
 app = FastAPI()
-model, color_dict = loadModel()
+model, criteria_color = loadModel()
+color_dict = criteria_color.set_index('Color Name').to_dict(orient='index')
 
 class ImageRequest(BaseModel):
     # Menentukan parameter dengan nilai default
@@ -40,17 +42,70 @@ async def read_root():
 
 @app.post("/api/predicted")
 async def predicted(file: UploadFile = File(...)):
-    id = generate_unique_id()
-    image_data = await file.read()
-    img = BytesIO(image_data)
-    data = predict_color(uploaded_file=image_data, model=model, color_dict=color_dict)
-
-    return JSONResponse(content={
-        "status_code": 201,
-        "status": "ok",
-        "id": id,
-        "predictions": data, 
-    })
+    try:
+        # Validate file
+        if not file or file.filename == "":
+            raise HTTPException(status_code=400, detail="No file uploaded")
+        
+        # Check file size (optional, example limit 10MB)
+        file.file.seek(0, 2)  # Move to end of file
+        file_size = file.file.tell()
+        file.file.seek(0)  # Reset file pointer
+        
+        if file_size > 10 * 1024 * 1024:  # 10MB limit
+            raise HTTPException(status_code=413, detail="File too large. Maximum 10MB allowed")
+        
+        # Validate file type (optional)
+        # allowed_types = ['image/jpeg', 'image/png']
+        # if file.content_type not in allowed_types:
+        #     raise HTTPException(status_code=400, detail="Invalid file type. Only JPEG, PNG, and GIF are allowed")
+        
+        # Generate unique ID
+        id = generate_unique_id()
+        
+        # Read image data
+        image_data = await file.read()
+        img = BytesIO(image_data)
+        
+        # Predict color
+        try:
+            data = predict_color(uploaded_file=img, model=model, color_dict=color_dict)
+        except Exception as predict_error:
+            raise HTTPException(status_code=500, detail=f"Prediction error: {str(predict_error)}")
+        
+        # Parse prediction result
+        prediction_result = json.loads(data)
+        
+        # Check if prediction was successful
+        if prediction_result.get('status') == 'error':
+            raise HTTPException(status_code=400, detail=prediction_result.get('message', 'Prediction failed'))
+        
+        return JSONResponse(content={
+            "status_code": 201,
+            "status": "ok",
+            "id": id,
+            "predictions": prediction_result, 
+        })
+    
+    except HTTPException as http_error:
+        return JSONResponse(
+            status_code=http_error.status_code, 
+            content={
+                "status_code": http_error.status_code,
+                "status": "error",
+                "message": http_error.detail
+            }
+        )
+    
+    except Exception as unexpected_error:
+        return JSONResponse(
+            status_code=500, 
+            content={
+                "status_code": 500,
+                "status": "error",
+                "message": f"Unexpected error: {str(unexpected_error)}"
+            }
+        )
     
 
 @app.post("/api/generate-plate")
@@ -69,4 +124,4 @@ async def get_image(data: ImageRequest):
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8080)
