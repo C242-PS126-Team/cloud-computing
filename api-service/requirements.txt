@@ -116,7 +116,7 @@ snowballstemmer==2.2.0
 soupsieve==2.6
 sqlparse==0.5.1
 stack-data==0.6.3
-starlette==0.27.0
+starlette==0.40.0
 supervisor==4.2.5
 tensorboard==2.17.1
 tensorboard-data-server==0.7.2
