@@ -1,31 +1,19 @@
 from io import BytesIO
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
+
 from pydantic import BaseModel
+from service.inferenceService import predict_color
+from service.loadModel import loadModel
+from utils import generate_unique_id
+
 # from google.cloud import storage
 from typing import Optional
 import requests
 import os
 
 app = FastAPI()
-
-BUCKET_NAME = "capstone" 
-# storage_client = storage.Client()
-
-# def upload_to_gcs(file: UploadFile, bucket_name: str) -> str:
-#     bucket = storage_client.get_bucket(bucket_name)
-#     blob = bucket.blob(file.filename)
-#     blob.upload_from_file(file.file)
-#     return f"gs://{bucket_name}/{blob.name}"
-
-# @app.post("/api/upload")
-# async def upload_file(file: UploadFile = File(...)):
-#     try:
-#         file_url = upload_to_gcs(file, BUCKET_NAME)
-#         return {"message": "File uploaded successfully", "file_url": file_url}
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-
+model, color_dict = loadModel()
 
 class ImageRequest(BaseModel):
     # Menentukan parameter dengan nilai default
@@ -49,6 +37,21 @@ class ImageRequest(BaseModel):
 @app.get("/api/")
 async def read_root():
     return {"message": "Welcome to API"}
+
+@app.post("/api/predicted")
+async def predicted(file: UploadFile = File(...)):
+    id = generate_unique_id()
+    image_data = await file.read()
+    img = BytesIO(image_data)
+    data = predict_color(uploaded_file=image_data, model=model, color_dict=color_dict)
+
+    return JSONResponse(content={
+        "status_code": 201,
+        "status": "ok",
+        "id": id,
+        "predictions": data, 
+    })
+    
 
 @app.post("/api/generate-plate")
 async def get_image(data: ImageRequest):
