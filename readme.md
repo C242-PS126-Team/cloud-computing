@@ -1,44 +1,36 @@
+# Dokumentasi Cloud Computing Team
+
 Dokumentasi ini berisi penjelasan mengenai rancangan sistem dari tim Cloud Computing pada project Capstone. Dokumentasi mencakup arsitektur, service-service yang digunakan, serta cara menjalankan sistem secara keseluruhan.
 
 ## Daftar Service
 
 ### 1. API Service
-Service ini menangani request API dari client. Dibuat menggunakan FastAPI framework.
+Service ini menangani request API dari client. Dibuat menggunakan FastAPI framework untuk Python.
+
+**Dokumentasi API Lengkap:**
+Untuk dokumentasi API yang lebih lengkap dan interaktif, silakan kunjungi:
+https://api.truecolor.my.id/docs
 
 **Endpoint yang tersedia:**
-- `/` - Endpoint default yang menampilkan pesan "Hello, World!"
-- `/api/` - Endpoint untuk mengakses API dengan pesan "Hello, this page for api!"
-- `/api/generate-plate` - Endpoint untuk menghasilkan gambar berdasarkan parameter yang diberikan.
 
-**Contoh Body Request untuk `/api/generate-plate`:**
-```json
-{
-    "radioSubmitway": "numberoption",
-    "numberselector": 69,
-    "background_colorslider": "#ffffff",
-    "iterationslider": 30000,
-    "min_radius": 4,
-    "max_radius": 15,
-    "use_shift": "on",
-    "shiftslider": 30,
-    "use_light": "on",
-    "lightschwiftslider": 120,
-    "use_blackwhite": "on",
-    "first_colorslider": "#89af23",
-    "second_colorslider": "#db5e2e",
-    "use_grad": "on",
-    "gradientshiftslider": 25,
-    "doCrop": "on"
-}
-```
+1. `/api/`
+- Method: GET
+- Deskripsi: Endpoint default yang menampilkan pesan selamat datang
+- Response: JSON dengan pesan welcome
 
-**Penjelasan untuk `radioSubmitway` dan `numberselector`:**
-- `radioSubmitway` adalah opsi untuk memilih jenis input. Jika `radioSubmitway` diatur ke "numberoption", maka `numberselector` akan digunakan untuk menentukan nomor plat. Jika `radioSubmitway` diatur ke "fileoption", maka `numberselector` akan digunakan untuk mengunggah file gambar plat.
-
-[Dokumentasi lengkap API Service](api-service/readme.md)
-
-### 2. ML Service (Coming Soon)
-Service yang akan menangani proses machine learning dan prediksi.
+2. `/api/predicted`
+- Method: POST
+- Deskripsi: Endpoint untuk memprediksi warna dari gambar yang diunggah
+- Content-Type: multipart/form-data
+- Parameter:
+  - file: File gambar yang akan diprediksi (required)
+  - format: jpg, png, jpeg
+  - max size: 10MB
+- Response:
+  - 200: Prediksi berhasil
+  - 400: File tidak ditemukan atau format tidak valid
+  - 413: Ukuran file terlalu besar (max 10MB)
+  - 500: Internal server error
 
 ## Arsitektur Sistem
 
@@ -53,6 +45,14 @@ Setiap service memiliki dokumentasi dan cara menjalankan masing-masing. Silakan 
 ## Kontribusi
 
 Untuk berkontribusi pada project ini, silakan buat pull request dengan deskripsi perubahan yang jelas.
+
+### Contributors
+<div align="center">
+  <img src="assets/contributors.png" alt="Contributors" title="Contributors">
+
+   [Hardianto](https://github.com/hardianto01)
+   [Petra Slent](https://github.com/petraslent)
+</div>
 
 ## Lisensi
 
