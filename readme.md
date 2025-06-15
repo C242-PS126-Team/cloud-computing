@@ -51,7 +51,7 @@ Untuk berkontribusi pada project ini, silakan buat pull request dengan deskripsi
   <img src="assets/contributors.png" alt="Contributors" title="Contributors">
 
    [Hardianto](https://github.com/hardianto01)
-   [Petra Slent](https://github.com/petraslent)
+   [Petra Slent](https://github.com/petradvl)
 </div>
 
 ## Lisensi
